@@ -57,14 +57,13 @@ namespace StaffScheduler.Controllers
         /// <summary>
         /// Return all staff in order of their accumulated work hours.
         /// </summary>
-        /// <param></param>
+        /// <param name="request"></param>
         /// <returns></returns>
         [HttpGet]
         [Route("staffs")]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery]ViewAllStaffRequest request)
         {
-            var request = new ViewAllStaffRequest();
-
+          
             var response = await _mediator.Send(request);
 
             return await _result.Get(response);

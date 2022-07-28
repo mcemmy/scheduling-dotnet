@@ -23,10 +23,10 @@ namespace StaffScheduler.Core.Application.UseCases.Staff.RemoveStaff
             var user = await _userManager.FindByNameAsync(request.UserName);
             if (user == null)
                 throw new RecordNotFoundException(ExceptionMessages.StaffRecordNotFound);
-
-            await _userManager.DeleteAsync(user);
-
+            
             await _staffRepository.RemoveAsync(user.UserName);
+            
+            await _userManager.DeleteAsync(user);
 
             return new RemoveStaffResponse(Status.Accepted,Messages.Successful);
 
