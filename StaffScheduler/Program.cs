@@ -56,6 +56,8 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddControllers();
 
+builder.Services.AddHealthChecks();
+
 builder.Services.AddMediatR(Assembly.GetExecutingAssembly());
 
 builder.Services.AddPersistence(configuration);
@@ -108,5 +110,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
+app.MapHealthChecks("/health");
 app.Run();
