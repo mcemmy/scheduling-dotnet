@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Shouldly;
-using StaffScheduler.Core.Application.Exceptions;
 using StaffScheduler.Core.Application.Interfaces;
+using StaffScheduler.Core.Application.UseCases;
 using StaffScheduler.Core.Application.UseCases.Schedule.ViewSchedule;
 using Xunit;
 using Schedule = StaffScheduler.Core.Domain.Schedule;
@@ -47,7 +47,7 @@ namespace StaffScheduler.Tests.CoreTest.UseCases
         }
 
         [Fact]
-        public void ShouldThrowRecordNotFoundException()
+        public void NotFoundExceptionShouldReturnMessage()
         {
             _scheduleRepo.Setup(x => x.GetByUserNameAsync(It.IsAny<string>(), It.IsAny<int>()))
                 .ReturnsAsync(new List<Schedule>());
@@ -59,10 +59,11 @@ namespace StaffScheduler.Tests.CoreTest.UseCases
                 UserName = "mac.twin",
                 WithinPeriodInMonths = 5
             };
-            
-            
-            Should.Throw<RecordNotFoundException>(async () => await viewScheduleUseCase.Handle(request, CancellationToken.None));
 
+            var response =  viewScheduleUseCase.Handle(request, CancellationToken.None).Result;
+            
+            response.Status.ShouldBe(Status.NotFound);
+           
         }
 
 

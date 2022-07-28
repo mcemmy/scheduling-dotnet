@@ -11,9 +11,11 @@ namespace StaffScheduler.Infrastructure
     public class ScheduleRepository : IScheduleRepository
     {
         private readonly DatabaseContext _databaseContext;
-        public ScheduleRepository(DatabaseContext databaseContext)
+        private readonly ILogger _logger;
+        public ScheduleRepository(DatabaseContext databaseContext, ILogger<ScheduleRepository> logger)
         {
             _databaseContext = databaseContext;
+            _logger = logger;
         }
 
         public async Task<List<Schedule>?> GetByUserNameAsync(string username, int periodInMonths)
@@ -37,14 +39,29 @@ namespace StaffScheduler.Infrastructure
             if (staff == null)
                 throw new RecordNotFoundException(ExceptionMessages.StaffRecordNotFound);
 
-            staff.Schedules.Add(new ScheduleEntity
+            if (staff.Schedules == null)
             {
-                StartsOn = schedule.StartsOn,
-                EndsOn = schedule.EndsOn,
-                CreatedOn = DateTime.UtcNow,
-                ModifiedOn = DateTime.UtcNow
-            });
-
+                var firstSchedule = new ScheduleEntity()
+                {
+                    StartsOn = schedule.StartsOn,
+                    EndsOn = schedule.EndsOn,
+                    CreatedOn = DateTime.UtcNow,
+                    ModifiedOn = DateTime.UtcNow
+                };
+                
+                staff.Schedules = new List<ScheduleEntity>(){firstSchedule};
+            }
+            else
+            {
+                staff.Schedules.Add(new ScheduleEntity
+                {
+                    StartsOn = schedule.StartsOn,
+                    EndsOn = schedule.EndsOn,
+                    CreatedOn = DateTime.UtcNow,
+                    ModifiedOn = DateTime.UtcNow
+                }); 
+            }
+            
             await _databaseContext.SaveChangesAsync();
         }
 
@@ -52,7 +69,7 @@ namespace StaffScheduler.Infrastructure
         {
             var oldSchedule = await GetScheduleAsync(schedule.Id);
 
-            oldSchedule.CreatedOn = schedule.StartsOn;
+            oldSchedule.StartsOn = schedule.StartsOn;
             oldSchedule.EndsOn = schedule.EndsOn;
             oldSchedule.ModifiedOn = DateTime.UtcNow;
 
