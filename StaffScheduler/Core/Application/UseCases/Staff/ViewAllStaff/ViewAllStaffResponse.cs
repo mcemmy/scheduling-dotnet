@@ -15,14 +15,15 @@
 
         public ViewAllStaffResponse(Status status) : base(status)
         {
-            
+            Records = new List<StaffRecord>();
         }
 
         public List<StaffRecord> Records { get; set; }
 
-        public void Order()
+
+        public void OrderByAccumulatedHours()
         {
-            Records.OrderBy(s => s.AccumulatedHours);
+            Records = Records.OrderByDescending(s =>s.AccumulatedHours).ToList();
         }
        
     }
@@ -31,8 +32,8 @@
     {
         public StaffRecord(string firstName, string lastName, double accumulatedHours)
         {
-            FirstName = firstName;
-            LastName = lastName;
+            FirstName = firstName ?? string.Empty;
+            LastName = lastName ?? string.Empty;
             AccumulatedHours = accumulatedHours;
             
         }

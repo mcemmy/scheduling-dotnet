@@ -21,7 +21,7 @@ namespace StaffScheduler.Infrastructure
         public async Task<List<Schedule>?> GetByUserNameAsync(string username, int periodInMonths)
         {
             //get the limit (in duration) of record to retrieve 
-            var dateRange = DateTime.UtcNow.Within(periodInMonths); 
+            var dateRange = DateTime.UtcNow.Within(periodInMonths);
 
             var records = await _databaseContext.Staff
                  .Where(s => s.User.UserName.Equals(username))
@@ -39,29 +39,15 @@ namespace StaffScheduler.Infrastructure
             if (staff == null)
                 throw new RecordNotFoundException(ExceptionMessages.StaffRecordNotFound);
 
-            if (staff.Schedules == null)
+            staff.Schedules.Add(new ScheduleEntity
             {
-                var firstSchedule = new ScheduleEntity()
-                {
-                    StartsOn = schedule.StartsOn,
-                    EndsOn = schedule.EndsOn,
-                    CreatedOn = DateTime.UtcNow,
-                    ModifiedOn = DateTime.UtcNow
-                };
-                
-                staff.Schedules = new List<ScheduleEntity>(){firstSchedule};
-            }
-            else
-            {
-                staff.Schedules.Add(new ScheduleEntity
-                {
-                    StartsOn = schedule.StartsOn,
-                    EndsOn = schedule.EndsOn,
-                    CreatedOn = DateTime.UtcNow,
-                    ModifiedOn = DateTime.UtcNow
-                }); 
-            }
-            
+                StartsOn = schedule.StartsOn,
+                EndsOn = schedule.EndsOn,
+                CreatedOn = DateTime.UtcNow,
+                ModifiedOn = DateTime.UtcNow
+            });
+
+
             await _databaseContext.SaveChangesAsync();
         }
 
@@ -75,7 +61,7 @@ namespace StaffScheduler.Infrastructure
 
             await _databaseContext.SaveChangesAsync();
         }
-        
+
         public async Task RemoveAsync(int scheduleId)
         {
             var schedule = await GetScheduleAsync(scheduleId);

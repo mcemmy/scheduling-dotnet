@@ -8,7 +8,7 @@ namespace StaffScheduler.Core.Application.Interfaces
         Task UpdateAsync(Staff editedStaff);
         Task RemoveAsync(string userName);
         Task<Staff> GetAsync(string userName);
-        Task<List<Staff>> GetAllAsync(int periodInMonths);
+        Task<List<Staff>> GetAllAsync(List<string> userNames, int periodInMonths);
 
     }
 }

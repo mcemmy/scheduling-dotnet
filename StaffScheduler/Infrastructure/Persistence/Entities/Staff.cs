@@ -15,6 +15,12 @@ namespace StaffScheduler.Infrastructure.Persistence.Entities
         
         public IdentityUser User { get; set; }
         public List<ScheduleEntity> Schedules { get; set; }
+
+        public StaffEntity()
+        {
+            User = new IdentityUser();
+            Schedules = new List<ScheduleEntity>();
+        }
         
     }
 }

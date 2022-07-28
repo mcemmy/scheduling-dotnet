@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿
+using Microsoft.AspNetCore.Mvc.TagHelpers.Cache;
+using Microsoft.EntityFrameworkCore;
 using StaffScheduler.Core.Application.Exceptions;
 using StaffScheduler.Core.Application.Interfaces;
 using StaffScheduler.Core.Domain;
@@ -46,24 +48,41 @@ namespace StaffScheduler.Infrastructure
         {
             var staff = await GetByUserNameAsync(userName);
 
+            var schedules = _databaseContext.Staff
+                .Where(s => s.User.UserName.Equals(userName))
+                .Select(sch => sch.Schedules).ToArray();
+
             _databaseContext.Staff.Remove(staff);
 
             await _databaseContext.SaveChangesAsync();
 
         }
 
-        public async Task<List<Staff>> GetAllAsync(int periodInMonths)
+        public async Task<List<Staff>> GetAllAsync(List<string> userNames,int periodInMonths)
         {
             var withinDate = DateTime.UtcNow.Within(periodInMonths);
             
-            var records = await _databaseContext.Staff
-                .Where(s =>s.Schedules.Exists(sc => sc.EndsOn >= withinDate))
-                .ToListAsync();
+            //TODO: Improve the query call by leveraging on the relationship
+            IList<StaffEntity> records = new List<StaffEntity>();
+            foreach (var user in userNames)
+            {
+                var staffEntity = await _databaseContext.Staff
+                    .Where(s => s.User.UserName.Equals(user))
+                    .SingleOrDefaultAsync();
+
+                var schedule = await _databaseContext.Staff
+                    .Where(s => s.User.UserName.Equals(user))
+                    .Select(sc => sc.Schedules.Where(m => m.EndsOn >= withinDate))
+                    .SingleOrDefaultAsync();
+                
+                records.Add(staffEntity);
+            }
 
             if (!records.Any())
                 throw new RecordNotFoundException(ExceptionMessages.StaffRecordNotFound);
-            
-            return records.Select(ConvertToDomain).ToList();
+
+            return (from record in records where record != null select ConvertToDomain(record)).ToList();
+         
         }
 
         public async Task<Staff> GetAsync(string userName)
@@ -78,6 +97,9 @@ namespace StaffScheduler.Infrastructure
 
         private static Staff ConvertToDomain(StaffEntity staffEntity)
         {
+            if (staffEntity == null)
+                return new Staff();
+
             var staff = new Staff
             {
                 FirstName = staffEntity.FirstName ?? string.Empty,
@@ -85,7 +107,7 @@ namespace StaffScheduler.Infrastructure
                 JoinedOn = staffEntity.JoinedOn,
                 User = staffEntity.User
             };
-            
+
             if (staffEntity.Schedules?.Count > 0)
             {
                 staff.Schedules = staffEntity.Schedules.AsEnumerable()
@@ -98,8 +120,8 @@ namespace StaffScheduler.Infrastructure
 
         private async Task<StaffEntity> GetByUserNameAsync(string userName)
         {
-           var staff = await _databaseContext.Staff
-                .SingleOrDefaultAsync(s => s.User.UserName.Equals(userName));
+            var staff = await _databaseContext.Staff
+                 .SingleOrDefaultAsync(s => s.User.UserName.Equals(userName));
 
             if (staff == null)
                 throw new RecordNotFoundException(ExceptionMessages.StaffRecordNotFound);
