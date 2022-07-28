@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Shouldly;
 using StaffScheduler.Core.Application.Exceptions;
@@ -15,10 +16,11 @@ namespace StaffScheduler.Tests.CoreTest.UseCases
     public class ViewScheduleUseCaseTest
     {
         private readonly Mock<IScheduleRepository> _scheduleRepo;
-        
+        private readonly Mock<ILogger<ViewScheduleUseCase>> _logger;
         public ViewScheduleUseCaseTest()
         {
             _scheduleRepo = new Mock<IScheduleRepository>();
+            _logger = new Mock<ILogger<ViewScheduleUseCase>>();
         }
 
         [Fact]
@@ -28,7 +30,7 @@ namespace StaffScheduler.Tests.CoreTest.UseCases
                 .ReturnsAsync(SampleSchedule);
 
            
-            var viewScheduleUseCase = new ViewScheduleUseCase(_scheduleRepo.Object);
+            var viewScheduleUseCase = new ViewScheduleUseCase(_scheduleRepo.Object, _logger.Object);
 
             var request = new ViewScheduleRequest()
             {
@@ -50,7 +52,7 @@ namespace StaffScheduler.Tests.CoreTest.UseCases
             _scheduleRepo.Setup(x => x.GetByUserNameAsync(It.IsAny<string>(), It.IsAny<int>()))
                 .ReturnsAsync(new List<Schedule>());
 
-            var viewScheduleUseCase = new ViewScheduleUseCase(_scheduleRepo.Object);
+            var viewScheduleUseCase = new ViewScheduleUseCase(_scheduleRepo.Object, _logger.Object);
 
             var request = new ViewScheduleRequest()
             {
