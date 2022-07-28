@@ -7,7 +7,7 @@ services:
     ports:
       - "3310:3310"
     volumes:
-      - dbdata:/var/lib/mysql
+      - ~/apps/mysql:/var/lib/mysql
     environment:
         MYSQL_RANDOM_ROOT_PASSWORD: 1
         MYSQL_DATABASE: staff_scheduler
@@ -21,6 +21,4 @@ services:
      build:
        context: .
      ports:
-       - "8080:5000"
-volumes:
-  dbdata:
+       - "5501:80"
