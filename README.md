@@ -16,7 +16,7 @@ Set up the application to run on your machine by running the following commands.
 ```
 Hit the url below on your broswer to see a list of endpoints
 ```
-localhost:5000/swagger/index.html
+localhost:5501/swagger/index.html
 ```
 
 ### Development
