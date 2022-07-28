@@ -7,7 +7,10 @@ services:
     ports:
       - "3310:3310"
     volumes:
-      - ~/apps/mysql:/var/lib/mysql
+      - ./scripts/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    #  - dbdata:/var/lib/mysql
+    restart: always
+    command: --lower_case_table_names=1
     environment:
         MYSQL_RANDOM_ROOT_PASSWORD: 1
         MYSQL_DATABASE: staff_scheduler
@@ -18,7 +21,11 @@ services:
      depends_on:
        - db
      image: staffscheduler:runtime
+     environment:
+       - ASPNETCORE_ENVIRONMENT=Development
      build:
        context: .
      ports:
        - "5501:80"
+#volumes:
+#  dbdata:
