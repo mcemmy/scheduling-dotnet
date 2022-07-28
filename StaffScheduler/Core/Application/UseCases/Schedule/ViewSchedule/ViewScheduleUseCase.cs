@@ -9,20 +9,39 @@ namespace StaffScheduler.Core.Application.UseCases.Schedule.ViewSchedule
     {
 
         private readonly IScheduleRepository _scheduleRepository;
-        public ViewScheduleUseCase(IScheduleRepository scheduleRepository)
+        private readonly ILogger _logger;
+        public ViewScheduleUseCase(IScheduleRepository scheduleRepository, ILogger<ViewScheduleUseCase> logger)
         {
             _scheduleRepository = scheduleRepository;
+            _logger = logger;
         }
 
         public async Task<ViewScheduleResponse> Handle(ViewScheduleRequest request, CancellationToken cancellationToken)
         {
+            try
+            {
+                var schedules = await _scheduleRepository.GetByUserNameAsync(request.UserName, request.WithinPeriodInMonths);
 
-            var schedules = await _scheduleRepository.GetByUserNameAsync(request.UserName, request.WithinPeriodInMonths);
+                if (schedules == null || !schedules.Any())
+                    throw new RecordNotFoundException(ExceptionMessages.ScheduleRecordNotFound);
 
-            if (schedules == null || !schedules.Any())
-                throw new RecordNotFoundException(ExceptionMessages.ScheduleRecordNotFound);
+                return GetResponse(request.UserName, schedules);
+            }
+            catch (RecordNotFoundException exception)
+            {
+                _logger.LogError(exception, exception.Message);
+                return new ViewScheduleResponse(Status.NotFound, ExceptionMessages.ScheduleRecordNotFound);
+                
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError(exception, exception.Message);
+                return new ViewScheduleResponse(Status.FatalError, ExceptionMessages.UnexpectedError);
+                
+            }
+            
 
-            return GetResponse(request.UserName, schedules);
+           
         }
 
         private static ViewScheduleResponse GetResponse(string username, IEnumerable<Domain.Schedule> schedules)
