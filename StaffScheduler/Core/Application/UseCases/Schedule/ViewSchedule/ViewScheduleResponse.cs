@@ -1,15 +1,24 @@
-﻿namespace StaffScheduler.Core.Application.UseCases.Schedule.ViewSchedule
+﻿using System.Text.Json.Serialization;
+
+namespace StaffScheduler.Core.Application.UseCases.Schedule.ViewSchedule
 {
     public class ViewScheduleResponse :BaseResponse
     {
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string UserName { get; set; }
-
+        
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public List<Schedule> Schedules { get; set; }
 
         public ViewScheduleResponse(Status status, string userName, List<Schedule> schedules) : base(status)
         {
             UserName = userName;
             Schedules = schedules;
+        }
+
+        public ViewScheduleResponse(Status status, string message) :base(status, message)
+        {
+            
         }
         
     }

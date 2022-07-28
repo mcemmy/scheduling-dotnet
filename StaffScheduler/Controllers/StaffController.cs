@@ -46,17 +46,24 @@ namespace StaffScheduler.Controllers
         /// <summary>
         /// Return authenticated staff schedule for a period of time.
         /// </summary>
-        /// <param name="request"></param>
+        /// <param name="periodInMonths"></param>
         /// <returns></returns>
 
         [HttpGet]
         [Route("my-schedules")]
-        public async Task<IActionResult> MySchedules(ViewScheduleRequest request)
+        public async Task<IActionResult> MySchedules([FromQuery] int periodInMonths)
         {
-            if (string.IsNullOrEmpty(request.UserName))
-            {
-                request.UserName = User?.Identity?.Name;
-            }
+            
+                var username = User?.Identity?.Name;
+                if (username == null)
+                    return Unauthorized();
+
+                var request = new ViewScheduleRequest()
+                {
+                    UserName = username,
+                    WithinPeriodInMonths = periodInMonths
+                };
+          
            
             var response = await _mediator.Send(request);
 
@@ -70,7 +77,7 @@ namespace StaffScheduler.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("schedules")]
-        public async Task<IActionResult> Schedules(ViewScheduleRequest request)
+        public async Task<IActionResult> Schedules([FromQuery] ViewScheduleRequest request)
         {
             var response = await _mediator.Send(request);
 

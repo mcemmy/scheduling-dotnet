@@ -69,23 +69,31 @@ namespace StaffScheduler.Infrastructure
         public async Task<Staff> GetAsync(string userName)
         {
             var staffEntity = await GetByUserNameAsync(userName);
+            if (staffEntity == null)
+                throw new RecordNotFoundException(ExceptionMessages.StaffRecordNotFound);
 
             return ConvertToDomain(staffEntity);
 
         }
 
-        public static Staff ConvertToDomain(StaffEntity staffEntity)
+        private static Staff ConvertToDomain(StaffEntity staffEntity)
         {
-            return new Staff
+            var staff = new Staff
             {
                 FirstName = staffEntity.FirstName ?? string.Empty,
                 LastName = staffEntity.LastName ?? string.Empty,
                 JoinedOn = staffEntity.JoinedOn,
-                User = staffEntity.User,
-                Schedules = staffEntity.Schedules.AsEnumerable()
-                    .Select(sc => new Schedule(sc.Id, sc.StartsOn, sc.EndsOn))
-                   .ToList()
+                User = staffEntity.User
             };
+            
+            if (staffEntity.Schedules?.Count > 0)
+            {
+                staff.Schedules = staffEntity.Schedules.AsEnumerable()
+                    .Select(sc => new Schedule(sc.Id, sc.StartsOn, sc.EndsOn))
+                    .ToList();
+            }
+
+            return staff;
         }
 
         private async Task<StaffEntity> GetByUserNameAsync(string userName)

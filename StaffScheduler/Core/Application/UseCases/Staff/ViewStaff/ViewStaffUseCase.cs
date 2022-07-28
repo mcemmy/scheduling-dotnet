@@ -9,10 +9,12 @@ namespace StaffScheduler.Core.Application.UseCases.Staff.ViewStaff
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IStaffRepository _staffRepository;
-        public ViewStaffUseCase(UserManager<IdentityUser> userManager, IStaffRepository staffRepository)
+        private readonly ILogger _logger;
+        public ViewStaffUseCase(UserManager<IdentityUser> userManager, IStaffRepository staffRepository, ILogger<ViewStaffUseCase> logger)
         {
             _userManager = userManager;
             _staffRepository = staffRepository;
+            _logger = logger;
         }
         public async Task<ViewStaffResponse> Handle(ViewStaffRequest request, CancellationToken cancellationToken)
         {
@@ -23,7 +25,7 @@ namespace StaffScheduler.Core.Application.UseCases.Staff.ViewStaff
                     throw new RecordNotFoundException(ExceptionMessages.StaffRecordNotFound);
 
                 var staffRecord = await _staffRepository.GetAsync(request.UserName);
-
+                
                 return new ViewStaffResponse(
                     Status.Ok,
                     staffRecord.FirstName,
@@ -33,16 +35,17 @@ namespace StaffScheduler.Core.Application.UseCases.Staff.ViewStaff
                     JoinedOn = staffRecord.JoinedOn
                 };
             }
+            catch (RecordNotFoundException exception)
+            {
+                _logger.LogError(exception, exception.Message);
+                return new ViewStaffResponse(Status.NotFound,ExceptionMessages.StaffRecordNotFound);
+            }
             catch (Exception exception)
             {
-                //log the error
-
-                return new ViewStaffResponse(
-                    Status.FatalError, 
-                    ExceptionMessages.UnexpectedError);
+                _logger.LogError(exception, exception.Message);
+                return new ViewStaffResponse(Status.FatalError,ExceptionMessages.UnexpectedError);
             }
-
-
+            
         }
     }
 }
