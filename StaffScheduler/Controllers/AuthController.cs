@@ -34,7 +34,7 @@ namespace StaffScheduler.Controllers
         }
 
         /// <summary>
-        /// Register as a staff on the system.
+        /// Register as a staff on the system. Password should be alphanumeric with at least 1 capital letter and a symbol
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
@@ -49,7 +49,7 @@ namespace StaffScheduler.Controllers
 
 
         /// <summary>
-        /// Register as an administrative staff on the system.
+        /// Register as an administrative staff on the system. Password should be alphanumeric with at least 1 capital letter and a symbol
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
